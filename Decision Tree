@@ -1,1 +1,170 @@
+# ============================================
+# 1. Dataset Initialization
+# ============================================
 
+training_data = [
+    ['Green', 3, 'Mango'],
+    ['Yellow', 3, 'Mango'],
+    ['Red', 1, 'Grape'],
+    ['Green', 3, 'Lemon'],
+    ['Yellow', 3, 'Lemon'],
+]
+
+header = ["Color", "Diameter", "Label"]
+
+
+# ============================================
+# 2. Helper Functions
+# ============================================
+
+def unique_vals(rows, col):
+    return set([row[col] for row in rows])
+
+
+def class_counts(rows):
+    counts = {}
+
+    for row in rows:
+        label = row[-1]
+
+        if label not in counts:
+            counts[label] = 0
+
+        counts[label] += 1
+
+    return counts
+
+
+# ============================================
+# 3. Question Class
+# ============================================
+
+class Question:
+
+    def __init__(self, column, value):
+        self.column = column
+        self.value = value
+
+    def match(self, example):
+        val = example[self.column]
+
+        # For numerical values
+        if isinstance(val, int):
+            return val >= self.value
+
+        # For categorical values
+        else:
+            return val == self.value
+
+    def __repr__(self):
+        condition = ">=" if isinstance(self.value, int) else "=="
+
+        return f"Is {header[self.column]} {condition} {self.value}?"
+
+
+# ============================================
+# 4. Partitioning Logic
+# ============================================
+
+def partition(rows, question):
+
+    true_rows = []
+    false_rows = []
+
+    for row in rows:
+
+        if question.match(row):
+            true_rows.append(row)
+
+        else:
+            false_rows.append(row)
+
+    return true_rows, false_rows
+
+
+# ============================================
+# 5. Math Metrics - Gini Impurity
+# ============================================
+
+def gini(rows):
+
+    counts = class_counts(rows)
+
+    impurity = 1
+
+    for lbl in counts:
+        prob_of_lbl = counts[lbl] / float(len(rows))
+        impurity -= prob_of_lbl ** 2
+
+    return impurity
+
+
+# ============================================
+# 6. Tree Building Components
+# ============================================
+
+class Leaf:
+
+    def __init__(self, rows):
+        self.predictions = class_counts(rows)
+
+
+class Decision_Node:
+
+    def __init__(self, question, true_branch, false_branch):
+
+        self.question = question
+        self.true_branch = true_branch
+        self.false_branch = false_branch
+
+
+# ============================================
+# 7. Recursive Tree Builder
+# ============================================
+
+def build_tree(rows):
+
+    # If rows are empty
+    if not rows:
+        return None
+
+    # Best split logic simplified for brevity
+    # In a full implementation:
+    # - Iterate through all features
+    # - Calculate information gain
+    # - Choose the best split
+
+    # Placeholder: directly return Leaf node
+    return Leaf(rows)
+
+
+# ============================================
+# 8. Testing the Functions
+# ============================================
+
+print("Unique Colors:")
+print(unique_vals(training_data, 0))
+
+print("\nClass Counts:")
+print(class_counts(training_data))
+
+question = Question(0, 'Green')
+
+print("\nQuestion:")
+print(question)
+
+true_rows, false_rows = partition(training_data, question)
+
+print("\nTrue Rows:")
+print(true_rows)
+
+print("\nFalse Rows:")
+print(false_rows)
+
+print("\nGini Impurity:")
+print(gini(training_data))
+
+tree = build_tree(training_data)
+
+print("\nLeaf Predictions:")
+print(tree.predictions)
